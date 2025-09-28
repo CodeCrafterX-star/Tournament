@@ -1,0 +1,1352 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Contest - Tournament App</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Sign-In API -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+        
+        .gradient-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .game-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .game-mode-card {
+            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            border: 1px solid #4b5563;
+        }
+        
+        .game-mode-card:hover {
+            transform: scale(1.05);
+            border-color: #f093fb;
+        }
+        
+        .tab-active {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .live-badge {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .bottom-nav {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid #374151;
+        }
+        
+        .nav-active {
+            color: #60a5fa;
+            transform: translateY(-5px);
+        }
+        
+        .player-count {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border: 4px solid #60a5fa;
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.5);
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+            border-radius: 15px;
+            border: 1px solid #4b5563;
+        }
+        
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .auth-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .auth-tab {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .auth-tab-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: #94a3b8;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .auth-tab-btn.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #475569;
+            border-radius: 10px;
+            color: white;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .app-content {
+            display: none;
+            padding-bottom: 80px;
+        }
+        
+        .app-content.active {
+            display: block;
+        }
+        
+        .google-signin-btn {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #4285f4;
+            border-radius: 10px;
+            background: white;
+            color: #4285f4;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+        
+        .google-signin-btn:hover {
+            background: #f8fafc;
+            transform: translateY(-2px);
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: #94a3b8;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid #475569;
+        }
+        
+        .divider-text {
+            padding: 0 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .google-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        
+        /* Hidden Admin Access Button - Only shown to admins */
+        .admin-access-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .admin-access-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Notification Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.error {
+            background: #ef4444;
+        }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Google Sign-In Configuration -->
+    <div id="g_id_onload"
+         data-client_id="79103670130-t26pq3mhqrg409m7bg5r1ohanmefj5ur.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleGoogleSignIn"
+         data-auto_prompt="false">
+    </div>
+
+    <!-- Hidden Admin Access Button (Only shown to admins) -->
+    <button id="adminAccessBtn" class="admin-access-btn hidden" title="Admin Panel">
+        <i class="fas fa-user-shield"></i>
+    </button>
+
+    <!-- AUTHENTICATION SECTION -->
+    <div id="auth-section" class="auth-container">
+        <div class="auth-card">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                    My Contest
+                </h1>
+                <p class="text-gray-400 mt-2">Join the ultimate gaming experience</p>
+            </div>
+
+            <!-- Hidden Admin Login Link (Only for admins) -->
+            <div id="admin-login-link" class="text-center mb-4 hidden">
+                <a href="#" onclick="showAdminLogin()" class="text-cyan-400 hover:text-cyan-300 text-sm">
+                    <i class="fas fa-user-shield mr-1"></i>Admin Login
+                </a>
+            </div>
+
+            <!-- Google Sign-In Button -->
+            <div class="google-signin-btn" id="googleSignInBtn">
+                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-avatar">
+                Continue with Google
+            </div>
+
+            <div class="divider">
+                <span class="divider-text">OR</span>
+            </div>
+
+            <!-- Auth Tabs -->
+            <div class="auth-tab flex">
+                <button class="auth-tab-btn active" onclick="switchAuthTab('login')">
+                    Login
+                </button>
+                <button class="auth-tab-btn" onclick="switchAuthTab('signup')">
+                    Sign Up
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form">
+                <input type="text" class="form-input" placeholder="Username" id="login-username" required>
+                <input type="password" class="form-input" placeholder="Password" id="login-password" required>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Login to Play
+                </button>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signup-form" class="auth-form hidden">
+                <input type="text" class="form-input" placeholder="Choose Username" id="signup-username" required>
+                <input type="password" class="form-input" placeholder="Create Password" id="signup-password" required>
+                <input type="text" class="form-input" placeholder="Game ID (e.g., PLAYER#123)" id="signup-gameid" required>
+                <textarea class="form-input" placeholder="Bio (Optional)" id="signup-bio" rows="2"></textarea>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-user-plus mr-2"></i>Create Account
+                </button>
+            </form>
+
+            <!-- Demo Account Info -->
+            <div class="mt-6 p-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
+                <p class="text-sm font-semibold text-center">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Demo Account: <strong>demo</strong> / <strong>demo123</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTENT (Hidden until login) -->
+    <div id="app-content" class="app-content">
+        <!-- Header with User Info -->
+        <header class="gradient-header py-4 shadow-2xl">
+            <div class="container mx-auto px-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-light opacity-90">WELCOME TO</h1>
+                        <h2 class="text-2xl md:text-4xl font-black text-yellow-300 drop-shadow-lg" id="header-title">My Contest</h2>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <img id="header-user-avatar" src="" alt="User Avatar" class="user-avatar hidden">
+                        <span id="header-user-name" class="text-sm font-semibold hidden md:block"></span>
+                        <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-lg text-sm font-semibold transition duration-300">
+                            <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-4 py-6 max-w-md md:max-w-2xl">
+            
+            <!-- HOME SECTION -->
+            <section id="home-section" class="section active">
+                <!-- Tournament Status Tabs -->
+                <div class="mb-8">
+                    <div class="flex bg-gray-800 rounded-2xl p-1 mb-6 shadow-lg">
+                        <button class="tab-btn flex-1 py-4 px-2 rounded-xl font-bold text-sm md:text-base transition-all duration-300 tab-active" data-tab="upcoming">
+                            Upcoming
+                        </button>
+                        <button class="tab-btn flex-1 py-4 px-2 rounded-xl font-bold text-sm md:text-base transition-all duration-300 text-gray-400" data-tab="ongoing">
+                            Ongoing
+                        </button>
+                        <button class="tab-btn flex-1 py-4 px-2 rounded-xl font-bold text-sm md:text-base transition-all duration-300 text-gray-400" data-tab="completed">
+                            Completed
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Export Games Section -->
+                <div class="mb-8">
+                    <h3 class="text-xl md:text-2xl font-black mb-4 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                        Export Games
+                    </h3>
+                    
+                    <!-- BGMI Game Card -->
+                    <div class="game-card p-6 mb-6 cursor-pointer" onclick="joinTournament('BGMI Championship')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <h4 class="text-lg md:text-xl font-black mb-1">BATTLEGROUNDS</h4>
+                                <h5 class="text-xl md:text-2xl font-black mb-3">MOBILE INDIA</h5>
+                                <div class="flex items-center space-x-3">
+                                    <span class="live-badge text-xs font-bold px-3 py-1 rounded-full">LIVE</span>
+                                    <span class="player-count text-xs font-semibold px-3 py-1 rounded-full">
+                                        <i class="fas fa-users mr-1"></i>50+ Playing
+                                    </span>
+                                </div>
+                                <p class="text-sm opacity-90 mt-3 font-medium">BGMI TDM • Entry Fee: ₹50 • Prize: ₹5000</p>
+                            </div>
+                            <div class="text-right ml-4">
+                                <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg">
+                                    <i class="fas fa-gamepad text-3xl text-purple-600"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EMI WOW MOD Section -->
+                    <div class="mt-8">
+                        <h4 class="text-lg md:text-xl font-black mb-4 text-purple-300">EMI WOW MOD</h4>
+                        
+                        <!-- Game Modes Grid -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="game-mode-card p-4 text-center cursor-pointer" onclick="selectGameMode('BM I SNIPER TDM LIS')">
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-crosshairs text-white"></i>
+                                </div>
+                                <h5 class="font-bold text-sm mb-1">BM I SNIPER TDM LIS</h5>
+                                <p class="text-xs text-gray-400">Custom Match</p>
+                            </div>
+                            
+                            <div class="game-mode-card p-4 text-center cursor-pointer" onclick="selectGameMode('MOBILE INDIA TOURNAMENT')">
+                                <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-trophy text-white"></i>
+                                </div>
+                                <h5 class="font-bold text-sm mb-1">MOBILE INDIA</h5>
+                                <p class="text-xs text-gray-400">Tournament</p>
+                            </div>
+                            
+                            <div class="game-mode-card p-4 text-center cursor-pointer" onclick="selectGameMode('BMI WOW PRACTICE')">
+                                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-dumbbell text-white"></i>
+                                </div>
+                                <h5 class="font-bold text-sm mb-1">BMI WOW MATCHES</h5>
+                                <p class="text-xs text-gray-400">Practice</p>
+                            </div>
+                            
+                            <div class="game-mode-card p-4 text-center cursor-pointer" onclick="selectGameMode('BMI WOW COMPETITIVE')">
+                                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-chess text-white"></i>
+                                </div>
+                                <h5 class="font-bold text-sm mb-1">BMI WOW MATCHES</h5>
+                                <p class="text-xs text-gray-400">Competitive</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="mb-8">
+                    <h3 class="text-xl md:text-2xl font-black mb-4 bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
+                        Quick Actions
+                    </h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl p-4 text-center cursor-pointer transform hover:scale-105 transition-all duration-300" onclick="quickAction('join')">
+                            <i class="fas fa-gamepad text-2xl mb-2"></i>
+                            <p class="text-sm font-semibold">Join Match</p>
+                        </div>
+                        <div class="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-4 text-center cursor-pointer transform hover:scale-105 transition-all duration-300" onclick="quickAction('tournament')">
+                            <i class="fas fa-trophy text-2xl mb-2"></i>
+                            <p class="text-sm font-semibold">Tournaments</p>
+                        </div>
+                        <div class="bg-gradient-to-br from-yellow-500 to-red-500 rounded-2xl p-4 text-center cursor-pointer transform hover:scale-105 transition-all duration-300" onclick="quickAction('team')">
+                            <i class="fas fa-users text-2xl mb-2"></i>
+                            <p class="text-sm font-semibold">Team Up</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Matches -->
+                <div>
+                    <h3 class="text-xl md:text-2xl font-black mb-4 bg-gradient-to-r from-red-400 to-orange-500 bg-clip-text text-transparent">
+                        Live Matches
+                    </h3>
+                    <div class="bg-gray-800 rounded-2xl p-5 shadow-lg">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="live-badge px-4 py-2 rounded-full text-sm font-bold flex items-center">
+                                <i class="fas fa-circle mr-2 animate-pulse"></i>LIVE NOW
+                            </span>
+                            <span class="text-green-400 text-sm font-semibold">
+                                <i class="fas fa-eye mr-1"></i>128 Viewers
+                            </span>
+                        </div>
+                        <div class="text-center">
+                            <h4 class="text-lg md:text-xl font-black mb-1">BGMI Championship</h4>
+                            <p class="text-gray-400 text-sm mb-4">Grand Finals - Match 3</p>
+                            <div class="flex justify-center items-center space-x-6 md:space-x-10">
+                                <div class="text-center">
+                                    <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg">
+                                        <span class="text-2xl font-bold">A</span>
+                                    </div>
+                                    <p class="font-bold text-sm">Team Alpha</p>
+                                    <p class="text-2xl font-black text-green-400 mt-1">12</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-2xl font-black mb-6">VS</p>
+                                    <div class="text-sm text-gray-400">
+                                        <p>Time: 15:23</p>
+                                        <p>Map: Erangel</p>
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-500 rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg">
+                                        <span class="text-2xl font-bold">B</span>
+                                    </div>
+                                    <p class="font-bold text-sm">Team Beta</p>
+                                    <p class="text-2xl font-black text-green-400 mt-1">8</p>
+                                </div>
+                            </div>
+                            <button class="mt-6 bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-3 rounded-full font-semibold hover:from-cyan-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-105">
+                                Watch Live <i class="fas fa-play ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MATCHES SECTION -->
+            <section id="matches-section" class="section">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-black bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent mb-2">My Matches</h2>
+                    <p class="text-gray-400">Manage your ongoing and upcoming matches</p>
+                </div>
+
+                <!-- Match Filters -->
+                <div class="flex space-x-2 mb-6">
+                    <button class="flex-1 bg-blue-600 py-3 rounded-xl font-semibold">Ongoing</button>
+                    <button class="flex-1 bg-gray-700 py-3 rounded-xl font-semibold">Upcoming</button>
+                    <button class="flex-1 bg-gray-700 py-3 rounded-xl font-semibold">Completed</button>
+                </div>
+
+                <!-- Ongoing Matches -->
+                <div class="space-y-4">
+                    <div class="bg-gray-800 rounded-2xl p-5">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="live-badge px-3 py-1 rounded-full text-xs font-bold">LIVE</span>
+                            <span class="text-green-400 text-sm">BGMI • TDM</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="text-center">
+                                <div class="w-12 h-12 bg-blue-500 rounded-full mx-auto mb-2 flex items-center justify-center">
+                                    <span class="font-bold">YOU</span>
+                                </div>
+                                <p class="text-sm font-semibold">Your Team</p>
+                                <p class="text-xl font-black text-green-400">5</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-lg font-black">VS</p>
+                                <p class="text-xs text-gray-400">15:30 remaining</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="w-12 h-12 bg-red-500 rounded-full mx-auto mb-2 flex items-center justify-center">
+                                    <span class="font-bold">OP</span>
+                                </div>
+                                <p class="text-sm font-semibold">Opponents</p>
+                                <p class="text-xl font-black text-green-400">3</p>
+                            </div>
+                        </div>
+                        <button class="w-full mt-4 bg-gradient-to-r from-green-500 to-blue-500 py-3 rounded-xl font-semibold">
+                            Continue Match
+                        </button>
+                    </div>
+
+                    <!-- Upcoming Match -->
+                    <div class="bg-gray-800 rounded-2xl p-5">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="bg-yellow-500 px-3 py-1 rounded-full text-xs font-bold">UPCOMING</span>
+                            <span class="text-yellow-400 text-sm">Starts in 30min</span>
+                        </div>
+                        <div class="text-center">
+                            <h4 class="text-lg font-black mb-2">BGMI Tournament Quarterfinals</h4>
+                            <p class="text-gray-400 text-sm mb-4">vs Team Thunder • Map: Miramar</p>
+                            <button class="w-full bg-gradient-to-r from-purple-500 to-pink-500 py-3 rounded-xl font-semibold">
+                                Prepare Match
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TOURNAMENTS SECTION -->
+            <section id="tournaments-section" class="section">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent mb-2">Tournaments</h2>
+                    <p class="text-gray-400">Join competitive tournaments and win big</p>
+                </div>
+
+                <!-- Tournament Categories -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl p-4 text-center">
+                        <i class="fas fa-trophy text-2xl mb-2"></i>
+                        <p class="font-semibold">Premium</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl p-4 text-center">
+                        <i class="fas fa-users text-2xl mb-2"></i>
+                        <p class="font-semibold">Team</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-yellow-500 to-red-500 rounded-2xl p-4 text-center">
+                        <i class="fas fa-bolt text-2xl mb-2"></i>
+                        <p class="font-semibold">Quick Play</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-pink-500 to-red-500 rounded-2xl p-4 text-center">
+                        <i class="fas fa-star text-2xl mb-2"></i>
+                        <p class="font-semibold">Featured</p>
+                    </div>
+                </div>
+
+                <!-- Tournament List -->
+                <div class="space-y-4">
+                    <!-- Featured Tournament -->
+                    <div class="game-card p-5 cursor-pointer" onclick="joinTournament('BGMI Championship 2024')">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="bg-red-500 px-2 py-1 rounded text-xs font-bold mb-2 inline-block">FEATURED</span>
+                                <h4 class="text-xl font-black mb-1">BGMI Championship 2024</h4>
+                                <p class="text-sm opacity-90">Prize Pool: ₹50,000 • 128 Teams</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-2xl font-black">₹500</p>
+                                <p class="text-xs">Entry Fee</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mt-4">
+                            <span class="text-sm"><i class="fas fa-users mr-1"></i>84/128</span>
+                            <button class="bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold">
+                                Join Now
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Regular Tournament -->
+                    <div class="bg-gray-800 rounded-2xl p-5" onclick="joinTournament('BGMI Daily Cup')">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="text-lg font-black mb-1">BGMI Daily Cup</h4>
+                                <p class="text-sm text-gray-400">Prize Pool: ₹5,000 • 32 Teams</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xl font-black">₹50</p>
+                                <p class="text-xs">Entry Fee</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mt-4">
+                            <span class="text-sm"><i class="fas fa-users mr-1"></i>24/32</span>
+                            <button class="bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-2 rounded-lg font-semibold">
+                                Join Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PROFILE SECTION -->
+            <section id="profile-section" class="section">
+                <div class="text-center mb-8">
+                    <img id="profile-google-avatar" src="" alt="Google Avatar" class="profile-avatar rounded-full mx-auto mb-4 hidden">
+                    <div id="profile-default-avatar" class="profile-avatar rounded-full mx-auto mb-4 bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
+                        <span class="text-4xl font-black" id="profile-avatar-text">P</span>
+                    </div>
+                    <h2 class="text-3xl font-black mb-1" id="profile-username">Player</h2>
+                    <p class="text-gray-400" id="profile-email"></p>
+                    <p class="text-gray-400">Level <span id="profile-level">15</span> • <span id="profile-coins">1250</span> Coins</p>
+                    <p class="text-sm text-gray-400 mt-1" id="profile-gameid">Game ID: Loading...</p>
+                    <p class="text-sm text-gray-400 mt-1" id="profile-bio">Bio: Loading...</p>
+                </div>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="stats-card p-4 text-center">
+                        <p class="text-2xl font-black text-green-400" id="matches-played">47</p>
+                        <p class="text-xs text-gray-400">Matches</p>
+                    </div>
+                    <div class="stats-card p-4 text-center">
+                        <p class="text-2xl font-black text-yellow-400" id="matches-won">32</p>
+                        <p class="text-xs text-gray-400">Wins</p>
+                    </div>
+                    <div class="stats-card p-4 text-center">
+                        <p class="text-2xl font-black text-red-400" id="win-rate">68%</p>
+                        <p class="text-xs text-gray-400">Win Rate</p>
+                    </div>
+                </div>
+
+                <!-- Profile Actions -->
+                <div class="space-y-3">
+                    <button class="w-full bg-gray-800 rounded-2xl p-4 text-left flex items-center justify-between" onclick="editProfile()">
+                        <span><i class="fas fa-user-edit mr-3"></i>Edit Profile</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="w-full bg-gray-800 rounded-2xl p-4 text-left flex items-center justify-between" onclick="addCoins()">
+                        <span><i class="fas fa-coins mr-3"></i>Add Coins</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="w-full bg-gray-800 rounded-2xl p-4 text-left flex items-center justify-between" onclick="showAchievements()">
+                        <span><i class="fas fa-trophy mr-3"></i>Achievements</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="w-full bg-gray-800 rounded-2xl p-4 text-left flex items-center justify-between" onclick="showSettings()">
+                        <span><i class="fas fa-cog mr-3"></i>Settings</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="w-full bg-red-500 rounded-2xl p-4 text-center font-semibold" onclick="logout()">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav fixed bottom-0 left-0 w-full py-3 z-50">
+            <div class="flex justify-around items-center max-w-md mx-auto px-4">
+                <button class="nav-btn flex flex-col items-center text-cyan-400 nav-active transition-all duration-300" onclick="showSection('home')">
+                    <i class="fas fa-home text-xl mb-1"></i>
+                    <span class="text-xs font-semibold">Home</span>
+                </button>
+                <button class="nav-btn flex flex-col items-center text-gray-400 transition-all duration-300" onclick="showSection('matches')">
+                    <i class="fas fa-crosshairs text-xl mb-1"></i>
+                    <span class="text-xs font-semibold">Matches</span>
+                </button>
+                <button class="nav-btn flex flex-col items-center text-gray-400 transition-all duration-300" onclick="showSection('tournaments')">
+                    <i class="fas fa-trophy text-xl mb-1"></i>
+                    <span class="text-xs font-semibold">Tournaments</span>
+                </button>
+                <button class="nav-btn flex flex-col items-center text-gray-400 transition-all duration-300" onclick="showSection('profile')">
+                    <i class="fas fa-user text-xl mb-1"></i>
+                    <span class="text-xs font-semibold">Profile</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="admin-login-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="auth-card">
+            <h3 class="text-2xl font-black mb-4 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent text-center">
+                Admin Login
+            </h3>
+            <form id="admin-login-form">
+                <input type="text" class="form-input" placeholder="Admin Username" id="admin-username" required>
+                <input type="password" class="form-input" placeholder="Admin Password" id="admin-password" required>
+                <button type="submit" class="btn-primary mb-4">
+                    <i class="fas fa-user-shield mr-2"></i>Login as Admin
+                </button>
+            </form>
+            <button onclick="hideAdminLogin()" class="w-full bg-gray-600 text-white py-3 rounded-lg font-semibold">
+                Cancel
+            </button>
+            
+            <!-- Default Admin Credentials -->
+            <div class="mt-4 p-3 bg-yellow-500 bg-opacity-20 rounded-lg">
+                <p class="text-sm text-yellow-300 text-center">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Default Admin: <strong>admin</strong> / <strong>admin123</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="toast-message">Action completed successfully!</span>
+        </div>
+    </div>
+
+    <script>
+        // Current state
+        let currentUser = null;
+        let currentSection = 'home';
+        let googleUser = null;
+        let isAdmin = false;
+
+        // Admin credentials
+        const ADMIN_CREDENTIALS = {
+            username: 'admin',
+            password: 'admin123'
+        };
+
+        // List of admin usernames (can be expanded)
+        const ADMIN_USERNAMES = ['admin', 'superadmin', 'administrator'];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
+            setupEventListeners();
+            setupDemoAccount();
+            initializeGoogleSignIn();
+            setupAdminData();
+        });
+
+        // Setup default admin data
+        function setupAdminData() {
+            if (!localStorage.getItem('adminSettings')) {
+                const adminSettings = {
+                    email: 'admin@mycontest.com',
+                    siteTitle: 'My Contest',
+                    maintenanceMode: false
+                };
+                localStorage.setItem('adminSettings', JSON.stringify(adminSettings));
+            }
+
+            if (!localStorage.getItem('tournaments')) {
+                const tournaments = [
+                    {
+                        id: 1,
+                        name: 'BGMI Championship 2024',
+                        entryFee: 500,
+                        prizePool: 50000,
+                        participants: 84,
+                        maxParticipants: 128,
+                        status: 'active'
+                    }
+                ];
+                localStorage.setItem('tournaments', JSON.stringify(tournaments));
+            }
+        }
+
+        // Show admin login modal
+        function showAdminLogin() {
+            document.getElementById('admin-login-modal').classList.remove('hidden');
+        }
+
+        // Hide admin login modal
+        function hideAdminLogin() {
+            document.getElementById('admin-login-modal').classList.add('hidden');
+        }
+
+        // Admin login form handler
+        document.getElementById('admin-login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('admin-username').value.trim();
+            const password = document.getElementById('admin-password').value.trim();
+
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                isAdmin = true;
+                localStorage.setItem('isAdmin', 'true');
+                hideAdminLogin();
+                showToast('Admin login successful! Redirecting to admin panel...');
+                // Redirect to admin panel
+                setTimeout(() => {
+                    window.location.href = 'admin-panel.html';
+                }, 2000);
+            } else {
+                showToast('Invalid admin credentials!', true);
+            }
+        });
+
+        // Check if current user is admin
+        function checkIfUserIsAdmin(username) {
+            return ADMIN_USERNAMES.includes(username.toLowerCase());
+        }
+
+        // Show admin access button if user is admin
+        function checkAndShowAdminAccess() {
+            if (currentUser && checkIfUserIsAdmin(currentUser.username)) {
+                document.getElementById('adminAccessBtn').classList.remove('hidden');
+                document.getElementById('admin-login-link').classList.remove('hidden');
+            } else {
+                document.getElementById('adminAccessBtn').classList.add('hidden');
+                document.getElementById('admin-login-link').classList.add('hidden');
+            }
+        }
+
+        // Redirect to admin panel
+        function redirectToAdminPanel() {
+            if (currentUser && checkIfUserIsAdmin(currentUser.username)) {
+                window.location.href = 'admin-panel.html';
+            } else {
+                showToast('Admin access required!', true);
+            }
+        }
+
+        // Initialize Google Sign-In
+        function initializeGoogleSignIn() {
+            document.getElementById('googleSignInBtn').addEventListener('click', function() {
+                google.accounts.id.prompt();
+            });
+        }
+
+        // Google Sign-In callback
+        function handleGoogleSignIn(response) {
+            const responsePayload = parseJwt(response.credential);
+            
+            googleUser = {
+                googleId: responsePayload.sub,
+                email: responsePayload.email,
+                name: responsePayload.name,
+                picture: responsePayload.picture,
+                given_name: responsePayload.given_name
+            };
+
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            let existingUser = null;
+
+            for (const username in users) {
+                if (users[username].email === googleUser.email) {
+                    existingUser = users[username];
+                    break;
+                }
+            }
+
+            if (existingUser) {
+                currentUser = existingUser;
+                showToast(`Welcome back, ${googleUser.given_name}!`);
+            } else {
+                currentUser = {
+                    username: generateUsername(googleUser.given_name),
+                    email: googleUser.email,
+                    name: googleUser.name,
+                    picture: googleUser.picture,
+                    googleId: googleUser.googleId,
+                    gameId: generateGameId(googleUser.given_name),
+                    bio: `Google user - ${googleUser.name}`,
+                    level: 1,
+                    coins: 200,
+                    matchesPlayed: 0,
+                    matchesWon: 0,
+                    isGoogleUser: true,
+                    joinDate: new Date().toISOString()
+                };
+
+                users[currentUser.username] = currentUser;
+                localStorage.setItem('users', JSON.stringify(users));
+                showToast(`Welcome to My Contest, ${googleUser.given_name}! +200 bonus coins!`);
+            }
+
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            localStorage.setItem('googleUser', JSON.stringify(googleUser));
+            showApp();
+        }
+
+        // Helper function to parse JWT token
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                console.error('Error parsing JWT:', e);
+                return null;
+            }
+        }
+
+        // Generate username from Google name
+        function generateUsername(givenName) {
+            const baseUsername = givenName.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            let username = baseUsername;
+            let counter = 1;
+
+            while (users[username]) {
+                username = `${baseUsername}${counter}`;
+                counter++;
+            }
+
+            return username;
+        }
+
+        // Generate game ID
+        function generateGameId(givenName) {
+            const randomNum = Math.floor(Math.random() * 10000);
+            return `${givenName.toUpperCase().substring(0, 3)}#${randomNum.toString().padStart(4, '0')}`;
+        }
+
+        // Switch between login/signup tabs
+        function switchAuthTab(tab) {
+            document.querySelectorAll('.auth-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.auth-form').forEach(form => {
+                form.classList.add('hidden');
+            });
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + '-form').classList.remove('hidden');
+        }
+
+        // Login form handler
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+
+            if (!username || !password) {
+                showToast('Please enter username and password');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            const user = users[username];
+
+            if (user && user.password === password) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                showApp();
+                showToast(`Welcome back, ${username}!`);
+            } else {
+                showToast('Invalid username or password', true);
+            }
+        });
+
+        // Signup form handler
+        document.getElementById('signup-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('signup-username').value.trim();
+            const password = document.getElementById('signup-password').value.trim();
+            const gameId = document.getElementById('signup-gameid').value.trim();
+            const bio = document.getElementById('signup-bio').value.trim();
+
+            if (!username || !password || !gameId) {
+                showToast('Please fill in all required fields');
+                return;
+            }
+
+            if (password.length < 6) {
+                showToast('Password must be at least 6 characters');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+
+            if (users[username]) {
+                showToast('Username already exists', true);
+                return;
+            }
+
+            // Create new user
+            currentUser = {
+                username: username,
+                password: password,
+                gameId: gameId,
+                bio: bio || 'No bio yet',
+                level: 1,
+                coins: 100,
+                matchesPlayed: 0,
+                matchesWon: 0,
+                joinDate: new Date().toISOString()
+            };
+
+            users[username] = currentUser;
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+            showApp();
+            showToast(`Account created successfully! Welcome, ${username}`);
+        });
+
+        // Show authentication screen
+        function showAuth() {
+            document.getElementById('auth-section').style.display = 'flex';
+            document.getElementById('app-content').classList.remove('active');
+        }
+
+        // Show main app
+        function showApp() {
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('app-content').classList.add('active');
+            updateProfileDisplay();
+            showSection('home');
+            updateHeaderUserInfo();
+            checkAndShowAdminAccess();
+        }
+
+        // Update header user info
+        function updateHeaderUserInfo() {
+            if (currentUser) {
+                if (currentUser.picture) {
+                    document.getElementById('header-user-avatar').src = currentUser.picture;
+                    document.getElementById('header-user-avatar').classList.remove('hidden');
+                }
+                document.getElementById('header-user-name').textContent = currentUser.name || currentUser.username;
+                document.getElementById('header-user-name').classList.remove('hidden');
+            }
+        }
+
+        // Update profile display
+        function updateProfileDisplay() {
+            if (!currentUser) return;
+            
+            if (currentUser.picture) {
+                document.getElementById('profile-google-avatar').src = currentUser.picture;
+                document.getElementById('profile-google-avatar').classList.remove('hidden');
+                document.getElementById('profile-default-avatar').classList.add('hidden');
+            } else {
+                document.getElementById('profile-google-avatar').classList.add('hidden');
+                document.getElementById('profile-default-avatar').classList.remove('hidden');
+                document.getElementById('profile-avatar-text').textContent = currentUser.username.charAt(0).toUpperCase();
+            }
+
+            document.getElementById('profile-username').textContent = currentUser.name || currentUser.username;
+            document.getElementById('profile-level').textContent = currentUser.level;
+            document.getElementById('profile-coins').textContent = currentUser.coins;
+            document.getElementById('profile-gameid').textContent = 'Game ID: ' + currentUser.gameId;
+            document.getElementById('profile-bio').textContent = 'Bio: ' + currentUser.bio;
+            
+            if (currentUser.email) {
+                document.getElementById('profile-email').textContent = currentUser.email;
+            }
+            
+            document.getElementById('matches-played').textContent = currentUser.matchesPlayed;
+            document.getElementById('matches-won').textContent = currentUser.matchesWon;
+            
+            const winRate = currentUser.matchesPlayed > 0 
+                ? Math.round((currentUser.matchesWon / currentUser.matchesPlayed) * 100) 
+                : 0;
+            document.getElementById('win-rate').textContent = winRate + '%';
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Tab switching for home section
+            document.querySelectorAll('.tab-btn').forEach((btn) => {
+                btn.addEventListener('click', function() {
+                    const tab = this.getAttribute('data-tab');
+                    switchTab(tab);
+                });
+            });
+
+            // Admin access button
+            document.getElementById('adminAccessBtn').addEventListener('click', redirectToAdminPanel);
+        }
+
+        // Show different sections
+        function showSection(section) {
+            if (!currentUser) return;
+            
+            document.querySelectorAll('.section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            
+            document.getElementById(section + '-section').classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('nav-active', 'text-cyan-400');
+                btn.classList.add('text-gray-400');
+            });
+            
+            const navIndex = getNavIndex(section);
+            const navButton = document.querySelector(`.nav-btn:nth-child(${navIndex})`);
+            if (navButton) {
+                navButton.classList.add('nav-active', 'text-cyan-400');
+            }
+            
+            const titles = {
+                home: 'My Contest',
+                matches: 'My Matches',
+                tournaments: 'Tournaments',
+                profile: 'My Profile'
+            };
+            document.getElementById('header-title').textContent = titles[section];
+            
+            currentSection = section;
+        }
+
+        // Get navigation index
+        function getNavIndex(section) {
+            const sections = ['home', 'matches', 'tournaments', 'profile'];
+            return sections.indexOf(section) + 1;
+        }
+
+        // Switch between tabs in home section
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const tabTypes = ['upcoming', 'ongoing', 'completed'];
+            
+            tabs.forEach((tabElement, index) => {
+                if (tabTypes[index] === tab) {
+                    tabElement.classList.add('tab-active', 'text-white');
+                    tabElement.classList.remove('text-gray-400');
+                } else {
+                    tabElement.classList.remove('tab-active', 'text-white');
+                    tabElement.classList.add('text-gray-400');
+                }
+            });
+            
+            showToast(`Showing ${tab} tournaments`);
+        }
+
+        // Join tournament function
+        function joinTournament(tournamentName) {
+            if (!currentUser) {
+                showToast('Please log in to join tournaments');
+                return;
+            }
+            
+            if (currentUser.coins < 50) {
+                showToast('Not enough coins! Need ₹50 to join');
+                return;
+            }
+            
+            currentUser.coins -= 50;
+            currentUser.matchesPlayed += 1;
+            
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            users[currentUser.username] = currentUser;
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            updateProfileDisplay();
+            showToast(`Joined ${tournamentName}! ₹50 deducted`);
+        }
+
+        // Select game mode
+        function selectGameMode(mode) {
+            showToast(`Selected: ${mode}`);
+        }
+
+        // Quick actions
+        function quickAction(action) {
+            const actions = {
+                join: 'Finding match...',
+                tournament: 'Opening tournaments...',
+                team: 'Team finder opening...'
+            };
+            showToast(actions[action]);
+        }
+
+        // Profile functions
+        function editProfile() {
+            showToast('Edit profile feature coming soon!');
+        }
+
+        function addCoins() {
+            currentUser.coins += 500;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            updateProfileDisplay();
+            showToast('+500 coins added!');
+        }
+
+        function showAchievements() {
+            showToast('Achievements feature coming soon!');
+        }
+
+        function showSettings() {
+            showToast('Settings feature coming soon!');
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                if (googleUser) {
+                    google.accounts.id.disableAutoSelect();
+                }
+                
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('googleUser');
+                currentUser = null;
+                googleUser = null;
+                showAuth();
+                showToast('Logged out successfully');
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            toastMessage.textContent = message;
+            
+            if (isError) {
+                toast.classList.add('error');
+            } else {
+                toast.classList.remove('error');
+            }
+            
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Setup demo account
+        function setupDemoAccount() {
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            if (!users['demo']) {
+                users['demo'] = {
+                    username: 'demo',
+                    password: 'demo123',
+                    gameId: 'DEMO#001',
+                    bio: 'Demo account for testing',
+                    level: 15,
+                    coins: 1250,
+                    matchesPlayed: 47,
+                    matchesWon: 32
+                };
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+        }
+
+        // Check authentication on load
+        function checkAuthentication() {
+            const savedUser = localStorage.getItem('currentUser');
+            const savedGoogleUser = localStorage.getItem('googleUser');
+            
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                if (savedGoogleUser) {
+                    googleUser = JSON.parse(savedGoogleUser);
+                }
+                showApp();
+            } else {
+                showAuth();
+            }
+        }
+    </script>
+</body>
+</html>
